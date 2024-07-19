@@ -76,7 +76,19 @@ custom_btns = [{"name": "Copy", "hasText":True, "alwaysOn": True,"style": {"top"
 }]
 response_dict = code_editor(str(io), lang="json", buttons=custom_btns, height=[10, 20])
 
+try:
+    data = json.loads(str(response_dict['text']))
+except:
+    data = dataDefault
 
+json_string = json.dumps(data,indent=4, separators=(',', ': '))
+
+st.download_button(
+    label="Download JSON File",
+    data=json_string,
+    file_name="mySurvey.json",
+    mime="application/json",
+)
 
 def colorbar(zmin, zmax, n = 6):
     return dict(
@@ -119,10 +131,7 @@ fig = go.Figure(go.Heatmap(
     colorscale = 'Plasma',
     name=""
     ), layout=layout)
-try:
-    data = json.loads(str(response_dict['text']))
-except:
-    data = dataDefault
+
 for i in data["year1Areas"]:
 
     if i['type']=='box':
@@ -193,4 +202,34 @@ st.plotly_chart(fig, use_container_width=True)
 
 st.divider()
 st.header("Example JSON inputs")
-st.json({'fruit':'apple'})
+st.write("I have provided three methods to generste shapes for the Long-Term Scheduler")
+
+c1, c2, c3 = st.columns((1, 1, 1))
+c1.header("Polygon")
+c1.json(      {
+        "name": "examplePolygon",
+        "type": "box",
+        "RA": [0.0 ,52.5, 52.5, 0.0],
+        "Dec":[-35.0 ,-35.0,-25.0,-25.0],
+        "t_frac": 0.2
+      })
+c2.header('Circle')
+c2.json({
+        "name": "exampleCircle",
+        "type": "circle",
+        "RA_center": 200,
+        "Dec_center":0,
+        "radius": 5,
+        "t_frac": 0.6
+      })
+c3.header('Ellipse')
+c3.json(      {
+        "name": "exampleEllipse",
+        "type": "ellipse",
+        "RA_center": 283.8313,
+        "Dec_center":-30.5453,
+        "a": 13,
+        "b":4.5,
+        "theta": -11.5,
+        "t_frac": 0.6
+      })
