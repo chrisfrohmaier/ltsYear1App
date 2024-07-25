@@ -126,7 +126,7 @@ layout = go.Layout(
     autosize=False,
     width=800, 
     height=600,
-    title='Year 1 Long Term Scheduler Preference',
+    title='Year 1 Long Term Scheduler Preference: SELFIE 453',
     xaxis=dict(
         title='R.A.',
 
