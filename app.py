@@ -9,6 +9,7 @@ import numpy as np
 from code_editor import code_editor
 from io import StringIO
 import math
+import datetime
 
 def plotEllipseTissot(ra, dec, radius=20):
     theta = np.deg2rad(dec)
@@ -60,12 +61,39 @@ st.set_page_config(layout="wide")
 
 st.title("4MOST Year 1 Long Term Scheduler")
 
+st.write("""As part of the 4MOST Long-Term Scheduler development efforts, participating surveys will be able to specifiy a preference for which regions of the sky are observed in year 1.
+
+There is no gauarantee that these regions will be observed to the extent the surveys request. This is simply a method for surveys to define a preference that the scheduler will consider when it attempts to optimse a strategy. Indeed, if all surveys request time, then it will be impossible to satisfy all requests. It is, therefore, also required that surveys provide a scientific justification within their submitted file.
+
+To this end, we have created this web tool for surveys to define their year 1 preference and to submit to the LTS coordinate group. Please follow the process presented below.
+""")
+
 st.divider()
-st.header("Define Areas here")
+st.header("Step 1: Define Areas here")
 
+st.write("""
+In this section we will define which regions of the sky we want to observe in year 1.
+         
+These areas are defined in the JSON editor below, JSON syntax highlighting is also shown. You can either edit the JSON file directly, or paste in your own code. 
+         
+Click the :grey-background[:orange[Run \u25BA]]. button at the bottom right of the window to process the inputted data. This will update the sky plot in Step 2.
+""")
 
-custom_btns = [{"name": "Copy", "hasText":True, "alwaysOn": True,"style": {"top": "0.46rem", "right": "0.4rem", "commands": ["copyAll"]}},
-                {"name": "Run",
+st.markdown("""
+Edit the value for the `survey` key with your surveys ID. e.g. S01. Expected format: string.
+
+Enter your science justification for this request in the `scienceJustification` part. Do not use the \'\"\' character as this will break you out of the string.
+
+The `year1Areas` are where you can add your defined polygons, each defined within the array square brackets `[ ]`, add a new element wrapped in `{ }`. There are three polygon types `box`, `circle`, `ellipse` (see below for examples).
+
+#### t_frac
+The `t_frac` key is common to all polygons. It is where you define what fraction of the total 5-year observing time you would like to use in Year 1. It should take a value between 0-1.
+            
+Example Polygons are shown at the bottom of the page.  
+""")
+
+#{"name": "Copy", "hasText":True, "alwaysOn": True,"style": {"top": "0.46rem", "right": "0.4rem", "commands": ["copyAll"]}}
+custom_btns = [{"name": "Run",
 "feather": "Play",
 "primary": True,
 "alwaysOn":True,
@@ -81,14 +109,6 @@ try:
 except:
     data = dataDefault
 
-json_string = json.dumps(data,indent=4, separators=(',', ': '))
-
-st.download_button(
-    label="Download JSON File",
-    data=json_string,
-    file_name="mySurvey.json",
-    mime="application/json",
-)
 
 def colorbar(zmin, zmax, n = 6):
     return dict(
@@ -97,6 +117,7 @@ def colorbar(zmin, zmax, n = 6):
         tickvals = np.linspace(np.log10(zmin), np.log10(zmax), n),
         ticktext = np.round(10 ** np.linspace(np.log10(zmin), np.log10(zmax), n), 0)
     )
+
 
 
 
@@ -197,12 +218,46 @@ fig['layout']['xaxis']['autorange'] = "reversed"
 fig.update_layout(yaxis_range=[-90,30])
 
 st.divider()
-st.header("Sky Plot of Year 1 Preference")
+st.header("Step 2: Check output on sky map")
+st.markdown("""
+Inspect your polygons here. If you are happy with the result, move on to the next step.
+""")
 st.plotly_chart(fig, use_container_width=True)
 
 st.divider()
+st.header("Step 3: Download JSON file")
+st.markdown("""
+Whatever is displayed in the above plot will be downloaded in this section.
+            
+Select your survey from the dropdown list, click the download button.
+""")
+sb = st.columns((1,9))
+surveyNumber=None
+surveyNumber = sb[0].selectbox(
+    'Select Survey',
+    ('01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18'),
+    index=None,
+    placeholder="S00")
+if surveyNumber == None:
+    surveyNumber = '00'
+today = datetime.date.today()
+fileOutputName = 'S'+str(surveyNumber)+'_'+'LTSYear1'+'_'+str(today.year)+today.strftime('%m')+today.strftime('%d')+'.json'
+st.write('File name:', fileOutputName)
+json_string = json.dumps(data,indent=4, separators=(',', ': '))
+
+st.download_button(
+    label="Download JSON File",
+    data=json_string,
+    file_name=fileOutputName,
+    mime="application/json",
+)
+
+st.divider()
 st.header("Example JSON inputs")
-st.write("I have provided three methods to generste shapes for the Long-Term Scheduler")
+st.markdown("""Here are three example polygons you can copy, paste, and edit!
+
+All units are in degrees.
+""")
 
 c1, c2, c3 = st.columns((1, 1, 1))
 c1.header("Polygon")
@@ -228,7 +283,7 @@ c3.json(      {
         "type": "ellipse",
         "RA_center": 283.8313,
         "Dec_center":-30.5453,
-        "a": 13,
+        "a": 13.0,
         "b":4.5,
         "theta": -11.5,
         "t_frac": 0.6
