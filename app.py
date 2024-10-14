@@ -1,6 +1,7 @@
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
+from plotly.express.colors import sample_colorscale
 import shapely.geometry
 from matplotlib.patches import Ellipse
 from shapely.geometry import Polygon 
@@ -49,7 +50,7 @@ grid_map_nan = np.load('ltsVPSelfie453.npy')
 zmin = 10
 zmax = np.nanmax(grid_map_nan)
 
-colours = iter(px.colors.sequential.Tealgrn)
+
 
 
 dataDefault = json.loads(str(io))
@@ -109,6 +110,8 @@ try:
 except:
     data = dataDefault
 
+numColours = np.linspace(0, 1, len(data["year1Areas"])+1)
+colours = iter(sample_colorscale('Tealgrn', list(numColours)))
 
 def colorbar(zmin, zmax, n = 6):
     return dict(
@@ -148,7 +151,7 @@ fig = go.Figure(go.Heatmap(
     "<b>Decl.</b>: %{y}<br>" +
     "<b>Total t_exp (min)</b>: %{text:.1f}",
     zmin = np.log10(zmin), zmax = np.log10(zmax),
-    colorbar = colorbar(zmin, zmax, 6),
+    colorbar = colorbar(zmin, zmax, 12),
     colorscale = 'Plasma',
     name=""
     ), layout=layout)
